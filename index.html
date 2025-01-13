@@ -4,147 +4,226 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Singing Training App</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            text-align: center;
+        @media (max-width: 640px) {
+            .note-display {
+                font-size: 32px;
+            }
+            .feedback {
+                font-size: 24px;
+            }
         }
-        .container {
-            background: #f5f5f5;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
+        
+        .gradient-button {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            transition: all 0.3s ease;
         }
-        button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 10px;
+        
+        .gradient-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
         }
-        button:disabled {
+        
+        .gradient-button:disabled {
             background: #cccccc;
-            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
-        .note-selector {
-            margin: 20px 0;
-            padding: 20px;
-            background: #f0f0f0;
-            border-radius: 8px;
-        }
-        .note-selector select {
-            font-size: 18px;
-            padding: 8px 16px;
-            margin: 0 10px;
-        }
-        .note-display {
-            font-size: 48px;
-            margin: 20px 0;
-            font-weight: bold;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            align-items: center;
-        }
-        .current-note, .target-note {
-            padding: 10px 20px;
-            border-radius: 8px;
-            min-width: 100px;
-            transition: background-color 0.2s ease;
-        }
-        .target-note {
-            background: #e0e0e0;
-        }
-        .comparison-label {
-            font-size: 24px;
-            margin: 0 10px;
-        }
-        .cents-display {
-            font-size: 24px;
-            margin: 10px 0;
-            font-weight: bold;
-        }
-        .feedback {
-            font-size: 28px;
-            margin: 15px 0;
-            font-weight: bold;
-            min-height: 40px;
-        }
+        
         .pitch-indicator {
-            height: 40px;
-            width: 100%;
-            background: linear-gradient(to right, #ff0000, #00ff00, #ff0000);
-            position: relative;
-            border-radius: 4px;
-            margin: 20px 0;
+            background: linear-gradient(to right, 
+                #ff6b6b 0%, 
+                #ffd93d 30%, 
+                #6dd5ed 50%, 
+                #ffd93d 70%, 
+                #ff6b6b 100%
+            );
         }
+        
         .pitch-marker {
-            position: absolute;
-            width: 4px;
-            height: 100%;
-            background: black;
-            left: 50%;
-            transform: translateX(-50%);
-            transition: left 0.1s ease;
+            transition: left 0.1s ease-out;
         }
+        
+        .note-card {
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+        
+        .note-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab-active {
+            border-bottom: 3px solid #4CAF50;
+            color: #4CAF50;
+        }
+
+        .sequence-note {
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .sequence-note.current {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .sequence-note.completed {
+            opacity: 1;
+            color: #4CAF50;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        
         canvas {
-            border: 1px solid #ddd;
-            margin-top: 20px;
-            width: 100%;
-            height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
-<body>
-    <h1>Singing Training App</h1>
-    
-    <div class="container">
-        <button id="startButton">Start Microphone</button>
-        <button id="stopButton" disabled>Stop</button>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center text-gray-800 mb-8">Singing Training App</h1>
         
-        <div class="note-selector">
-            <label for="noteSelect">Target Note:</label>
-            <select id="noteSelect">
-                <option value="C3">C</option>
-                <option value="D3">D</option>
-                <option value="E3">E</option>
-                <option value="F3">F</option>
-                <option value="G3">G</option>
-                <option value="A3">A</option>
-                <option value="B3">B</option>
-                <option value="C4">C</option>
-            </select>
-            <select id="octaveSelect">
-                <option value="3" selected>Octave 3</option>
-                <option value="4">Octave 4</option>
-                <option value="5">Octave 5</option>
-            </select>
+        <!-- Tab Navigation -->
+        <div class="flex justify-center mb-8">
+            <button id="practiceTab" class="px-6 py-3 font-semibold tab-active">Practice Mode</button>
+            <button id="gameTab" class="px-6 py-3 font-semibold">Game Mode</button>
         </div>
-        
-        <div class="note-display">
-            <div class="target-note">Target: <span id="targetNote">C4</span></div>
-            <div class="comparison-label">→</div>
-            <div class="current-note" id="noteDisplay">-</div>
+
+        <!-- Practice Mode -->
+        <div id="practiceMode" class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+            <div class="flex flex-wrap gap-4 justify-center mb-6">
+                <button id="startButton" class="gradient-button text-white px-6 py-3 rounded-lg font-semibold">
+                    Start Microphone
+                </button>
+                <button id="stopButton" disabled class="gradient-button text-white px-6 py-3 rounded-lg font-semibold">
+                    Stop
+                </button>
+            </div>
+            
+            <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                <div class="flex flex-wrap gap-4 justify-center items-center">
+                    <div class="flex items-center gap-2">
+                        <label for="noteSelect" class="text-gray-700 font-medium">Target Note:</label>
+                        <select id="noteSelect" class="block w-40 px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="C">C</option>
+                            <option value="C#">C#</option>
+                            <option value="D">D</option>
+                            <option value="D#">D#</option>
+                            <option value="E">E</option>
+                            <option value="F">F</option>
+                            <option value="F#">F#</option>
+                            <option value="G">G</option>
+                            <option value="G#">G#</option>
+                            <option value="A">A</option>
+                            <option value="A#">A#</option>
+                            <option value="B">B</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label for="octaveSelect" class="text-gray-700 font-medium">Octave:</label>
+                        <select id="octaveSelect" class="block w-32 px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="3">Octave 3</option>
+                            <option value="4" selected>Octave 4</option>
+                            <option value="5">Octave 5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-6 mb-6">
+                <div class="note-card p-4 rounded-lg min-w-[120px] text-center">
+                    <div class="text-sm text-gray-500 mb-1">Target</div>
+                    <div id="targetNote" class="text-2xl font-bold text-gray-800">C4</div>
+                </div>
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                    </svg>
+                </div>
+                <div class="note-card p-4 rounded-lg min-w-[120px] text-center">
+                    <div class="text-sm text-gray-500 mb-1">Current</div>
+                    <div id="noteDisplay" class="text-2xl font-bold text-gray-800">-</div>
+                </div>
+            </div>
+            
+            <div id="centsDisplay" class="text-xl text-center text-gray-600 mb-4">0 cents</div>
+            <div id="feedback" class="text-2xl text-center font-semibold mb-6 min-h-[40px] text-gray-800">
+                Sing a note...
+            </div>
+            
+            <div class="relative h-8 rounded-full overflow-hidden pitch-indicator mb-8">
+                <div id="pitchMarker" class="pitch-marker absolute top-0 w-1 h-full bg-black left-1/2 transform -translate-x-1/2"></div>
+            </div>
+            
+            <canvas id="visualizer" class="w-full h-48 bg-white"></canvas>
         </div>
-        <div class="cents-display" id="centsDisplay">0 cents</div>
-        <div class="feedback" id="feedback">Sing a note...</div>
-        <div class="pitch-indicator">
-            <div class="pitch-marker" id="pitchMarker"></div>
+
+        <!-- Game Mode -->
+        <div id="gameMode" class="bg-white rounded-lg shadow-lg p-6 md:p-8 hidden">
+            <div class="flex flex-wrap gap-4 justify-center mb-6">
+                <button id="startGameButton" class="gradient-button text-white px-6 py-3 rounded-lg font-semibold">
+                    Start Game
+                </button>
+                <button id="stopGameButton" disabled class="gradient-button text-white px-6 py-3 rounded-lg font-semibold">
+                    Stop
+                </button>
+            </div>
+
+            <div class="flex justify-center gap-4 flex-wrap mb-8">
+                <div class="sequence-note current p-4 rounded-lg bg-gray-50">
+                    <div class="text-lg font-bold">Do (C)</div>
+                </div>
+                <div class="sequence-note p-4 rounded-lg bg-gray-50">
+                    <div class="text-lg font-bold">Re (D)</div>
+                </div>
+                <div class="sequence-note p-4 rounded-lg bg-gray-50">
+                    <div class="text-lg font-bold">Mi (E)</div>
+                </div>
+                <div class="sequence-note p-4 rounded-lg bg-gray-50">
+                    <div class="text-lg font-bold">Fa (F)</div>
+                </div>
+                <div class="sequence-note p-4 rounded-lg bg-gray-50">
+                    <div class="text-lg font-bold">So (G)</div>
+                </div>
+                <div class="sequence-note p-4 rounded-lg bg-gray-50">
+                    <div class="text-lg font-bold">La (A)</div>
+                </div>
+                <div class="sequence-note p-4 rounded-lg bg-gray-50">
+                    <div class="text-lg font-bold">Ti (B)</div>
+                </div>
+                <div class="sequence-note p-4 rounded-lg bg-gray-50">
+                    <div class="text-lg font-bold">Do (C)</div>
+                </div>
+            </div>
+
+            <div id="gameTargetNote" class="text-3xl font-bold text-center mb-4">Sing: C4</div>
+            <div id="gameFeedback" class="text-2xl text-center font-semibold mb-6 min-h-[40px]">
+                Get ready...
+            </div>
+            
+            <div class="relative h-8 rounded-full overflow-hidden pitch-indicator mb-8">
+                <div id="gamePitchMarker" class="pitch-marker absolute top-0 w-1 h-full bg-black left-1/2 transform -translate-x-1/2"></div>
+            </div>
+            
+            <canvas id="gameVisualizer" class="w-full h-48 bg-white"></canvas>
         </div>
-        
-        <canvas id="visualizer" width="700" height="200"></canvas>
     </div>
-
+    
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            new SingingTrainer();
-        });
-
         class SingingTrainer {
             constructor() {
                 // Initialize audio context and analyzer
@@ -190,8 +269,6 @@
                     });
                     
                     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    console.log('Sample rate:', this.audioContext.sampleRate);
-                    
                     this.analyser = this.audioContext.createAnalyser();
                     this.analyser.fftSize = 2048;
                     this.analyser.smoothingTimeConstant = 0;
@@ -207,9 +284,6 @@
                     this.stopButton.disabled = false;
                     this.feedback.textContent = 'Listening...';
                     
-                    console.log('Audio processing started');
-                    console.log('Buffer length:', bufferLength);
-                    
                     this.updatePitch(dataArray);
                     this.drawVisualizer(dataArray);
                 } catch (error) {
@@ -219,15 +293,39 @@
             }
 
             stopRecording() {
-                if (this.audioContext) {
+                if (this.audioContext && this.mediaStreamSource) {
                     this.mediaStreamSource.disconnect();
+                    this.audioContext.close();
+                    this.audioContext = null;
+                    this.mediaStreamSource = null;
+                    this.analyser = null;
                     this.isRecording = false;
+                    
                     this.startButton.disabled = false;
                     this.stopButton.disabled = true;
-                    this.noteDisplay.textContent = '-';
+                    
+                    this.pitchMarker.style.left = '50%';
+                    
+                    if (this.noteDisplay) {
+                        this.noteDisplay.textContent = '-';
+                    }
+                    
                     this.feedback.textContent = 'Sing a note...';
-                    this.noteDisplay.style.backgroundColor = '#e0e0e0';
-                    this.centsDisplay.textContent = '0 cents';
+                    this.feedback.style.color = '#4b5563';
+                    
+                    if (this.centsDisplay) {
+                        this.centsDisplay.textContent = '0 cents';
+                    }
+                    
+                    // Clear canvas
+                    this.canvasCtx.fillStyle = '#f8fafc';
+                    this.canvasCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                    
+                    // Clear any existing animation frames
+                    if (this.animationFrame) {
+                        cancelAnimationFrame(this.animationFrame);
+                        this.animationFrame = null;
+                    }
                 }
             }
 
@@ -246,24 +344,24 @@
                     
                     const accuracy = Math.abs(cents);
                     if (accuracy < 10) {
-                        this.noteDisplay.style.backgroundColor = '#4CAF50';
                         this.feedback.textContent = 'Perfect!';
+                        this.feedback.style.color = '#4CAF50';
                     } else if (accuracy < 30) {
-                        this.noteDisplay.style.backgroundColor = '#8BC34A';
                         this.feedback.textContent = cents > 0 ? 'Slightly high' : 'Slightly low';
+                        this.feedback.style.color = '#8BC34A';
                     } else if (accuracy < 50) {
-                        this.noteDisplay.style.backgroundColor = '#FFC107';
                         this.feedback.textContent = cents > 0 ? 'Too high' : 'Too low';
+                        this.feedback.style.color = '#FFC107';
                     } else {
-                        this.noteDisplay.style.backgroundColor = '#F44336';
                         this.feedback.textContent = cents > 0 ? 'Way too high' : 'Way too low';
+                        this.feedback.style.color = '#F44336';
                     }
                     
                     this.centsDisplay.textContent = `${cents > 0 ? '+' : ''}${Math.round(cents)} cents`;
                 } else {
                     this.noteDisplay.textContent = '-';
-                    this.noteDisplay.style.backgroundColor = '#e0e0e0';
                     this.feedback.textContent = 'Sing a note...';
+                    this.feedback.style.color = '#4b5563';
                     this.centsDisplay.textContent = '0 cents';
                 }
 
@@ -275,10 +373,10 @@
 
                 this.analyser.getFloatTimeDomainData(dataArray);
                 
-                this.canvasCtx.fillStyle = 'rgb(200, 200, 200)';
+                this.canvasCtx.fillStyle = '#f8fafc';
                 this.canvasCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
                 this.canvasCtx.lineWidth = 2;
-                this.canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+                this.canvasCtx.strokeStyle = '#4CAF50';
                 this.canvasCtx.beginPath();
 
                 const sliceWidth = this.canvas.width / dataArray.length;
@@ -315,7 +413,7 @@
             }
 
             updateTargetNote() {
-                const note = this.noteSelect.value[0];
+                const note = this.noteSelect.value;
                 const octave = parseInt(this.octaveSelect.value);
                 this.targetFrequency = this.noteToFrequency(note, octave);
                 this.targetNote.textContent = `${note}${octave}`;
@@ -327,29 +425,18 @@
                 const noteIndex = this.notes.indexOf(note);
                 const octaveDiff = octave - 4;
                 
-                // Calculate halfsteps from A4
                 const halfSteps = noteIndex - a4Index + (octaveDiff * 12);
-                
-                // Calculate frequency using equal temperament formula
-                const frequency = a4 * Math.pow(2, halfSteps / 12);
-                console.log(`Note ${note}${octave} frequency: ${frequency}`);
-                return frequency;
+                return a4 * Math.pow(2, halfSteps / 12);
             }
 
             calculateCents(frequency) {
-                console.log(`Current frequency: ${frequency}, Target frequency: ${this.targetFrequency}`);
-                // Calculate cents deviation from target note
                 const ratio = frequency / this.targetFrequency;
-                const cents = 1200 * Math.log2(ratio);
-                console.log(`Cents difference: ${cents}`);
-                return cents;
+                return 1200 * Math.log2(ratio);
             }
 
             updatePitchIndicator(cents) {
-                // Scale cents to the indicator (±100 cents = ±50% from center)
                 const position = 50 + (cents / 2);
                 this.pitchMarker.style.left = `${Math.max(0, Math.min(100, position))}%`;
-                console.log(`Pitch indicator position: ${position}%`);
             }
 
             autoCorrelate(buffer, sampleRate) {
@@ -359,19 +446,15 @@
                 let bestCorrelation = 0;
                 let rms = 0;
                 
-                // Calculate RMS
                 for (let i = 0; i < SIZE; i++) {
                     rms += buffer[i] * buffer[i];
                 }
                 rms = Math.sqrt(rms / SIZE);
-                console.log('Signal strength (RMS):', rms);
 
-                if (rms < 0.003) {  // Lowered threshold further
-                    console.log('Signal too weak, need:', 0.003, 'got:', rms);
+                if (rms < 0.003) {
                     return null;
                 }
 
-                // Find ACF, starting from 1 to avoid divide by zero
                 let correlation = new Float32Array(MAX_SAMPLES);
                 for (let offset = 1; offset < MAX_SAMPLES; offset++) {
                     let sum = 0;
@@ -381,7 +464,6 @@
                     correlation[offset] = 1 - (sum / MAX_SAMPLES);
                 }
 
-                // Find the highest correlation after the first few samples
                 let MIN_OFFSET = Math.floor(sampleRate / this.maxPitch);
                 let MAX_OFFSET = Math.floor(sampleRate / this.minPitch);
 
@@ -392,18 +474,178 @@
                     }
                 }
 
-                console.log('Best correlation:', bestCorrelation, 'at offset:', bestOffset);
-
-                if (bestCorrelation > 0.5) {  // Lowered correlation threshold
+                if (bestCorrelation > 0.5) {
                     const fundamentalFreq = sampleRate / bestOffset;
-                    console.log('Detected frequency:', fundamentalFreq.toFixed(1), 'Hz');
                     return fundamentalFreq;
                 }
                 
-                console.log('No valid pitch detected');
                 return null;
             }
         }
+
+        class SingingGame extends SingingTrainer {
+            constructor() {
+                super();
+                this.sequence = [
+                    { note: 'C', name: 'Do' },
+                    { note: 'D', name: 'Re' },
+                    { note: 'E', name: 'Mi' },
+                    { note: 'F', name: 'Fa' },
+                    { note: 'G', name: 'So' },
+                    { note: 'A', name: 'La' },
+                    { note: 'B', name: 'Ti' },
+                    { note: 'C', name: 'Do' }
+                ];
+                this.currentNoteIndex = 0;
+                this.noteHoldTimer = null;
+                this.requiredHoldTime = 500;
+                
+                // Override DOM elements for game mode
+                this.startButton = document.getElementById('startGameButton');
+                this.stopButton = document.getElementById('stopGameButton');
+                this.feedback = document.getElementById('gameFeedback');
+                this.pitchMarker = document.getElementById('gamePitchMarker');
+                this.canvas = document.getElementById('gameVisualizer');
+                this.canvasCtx = this.canvas.getContext('2d');
+                
+                this.gameTargetNote = document.getElementById('gameTargetNote');
+                this.sequenceNotes = document.querySelectorAll('.sequence-note');
+                this.gameOctaveSelect = document.getElementById('gameOctaveSelect');
+                
+                // Sync octave selection between modes
+                this.gameOctaveSelect.addEventListener('change', () => {
+                    document.getElementById('octaveSelect').value = this.gameOctaveSelect.value;
+                    this.setCurrentNote();
+                });
+
+                document.getElementById('octaveSelect').addEventListener('change', () => {
+                    this.gameOctaveSelect.value = document.getElementById('octaveSelect').value;
+                    this.setCurrentNote();
+                });
+                
+                this.setCurrentNote();
+            }
+
+            setCurrentNote() {
+                const current = this.sequence[this.currentNoteIndex];
+                const octave = parseInt(this.gameOctaveSelect.value);
+                
+                // For the last note, use one octave higher
+                const noteOctave = current.note === 'C' && this.currentNoteIndex === this.sequence.length - 1 
+                    ? octave + 1 
+                    : octave;
+                
+                this.targetFrequency = this.noteToFrequency(current.note, noteOctave);
+                this.gameTargetNote.textContent = `Sing: ${current.name} (${current.note}${noteOctave})`;
+                
+                this.sequenceNotes.forEach((el, index) => {
+                    el.classList.remove('current', 'completed');
+                    if (index < this.currentNoteIndex) {
+                        el.classList.add('completed');
+                    } else if (index === this.currentNoteIndex) {
+                        el.classList.add('current');
+                    }
+                })
+            }
+
+            updatePitch(dataArray) {
+                if (!this.isRecording) return;
+
+                this.analyser.getFloatTimeDomainData(dataArray);
+                const pitch = this.autoCorrelate(dataArray, this.audioContext.sampleRate);
+
+                if (pitch) {
+                    const note = this.frequencyToNote(pitch);
+                    const cents = this.calculateCents(pitch);
+                    this.updatePitchIndicator(cents);
+                    
+                    const accuracy = Math.abs(cents);
+                    
+                    if (accuracy < 20) {
+                        if (!this.noteHoldTimer) {
+                            this.noteHoldTimer = setTimeout(() => {
+                                this.advanceNote();
+                            }, this.requiredHoldTime);
+                        }
+                        this.feedback.textContent = 'Hold it...';
+                        this.feedback.style.color = '#4CAF50';
+                    } else {
+                        if (this.noteHoldTimer) {
+                            clearTimeout(this.noteHoldTimer);
+                            this.noteHoldTimer = null;
+                        }
+                        if (accuracy < 30) {
+                            this.feedback.textContent = cents > 0 ? 'Slightly high' : 'Slightly low';
+                            this.feedback.style.color = '#8BC34A';
+                        } else if (accuracy < 50) {
+                            this.feedback.textContent = cents > 0 ? 'Too high' : 'Too low';
+                            this.feedback.style.color = '#FFC107';
+                        } else {
+                            this.feedback.textContent = cents > 0 ? 'Way too high' : 'Way too low';
+                            this.feedback.style.color = '#F44336';
+                        }
+                    }
+                } else {
+                    if (this.noteHoldTimer) {
+                        clearTimeout(this.noteHoldTimer);
+                        this.noteHoldTimer = null;
+                    }
+                    this.feedback.textContent = 'Sing the note...';
+                    this.feedback.style.color = '#4b5563';
+                }
+
+                requestAnimationFrame(() => this.updatePitch(dataArray));
+            }
+
+            advanceNote() {
+                this.currentNoteIndex++;
+                this.noteHoldTimer = null;
+                
+                if (this.currentNoteIndex >= this.sequence.length) {
+                    this.feedback.textContent = 'Congratulations! You completed the sequence!';
+                    this.feedback.style.color = '#4CAF50';
+                    this.stopRecording();
+                    return;
+                }
+                
+                this.setCurrentNote();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let practiceMode = new SingingTrainer();
+            let gameMode = new SingingGame();
+            
+            // Tab switching logic
+            const practiceTab = document.getElementById('practiceTab');
+            const gameTab = document.getElementById('gameTab');
+            const practiceModeDiv = document.getElementById('practiceMode');
+            const gameModeDiv = document.getElementById('gameMode');
+            
+            practiceTab.addEventListener('click', () => {
+                practiceTab.classList.add('tab-active');
+                gameTab.classList.remove('tab-active');
+                practiceModeDiv.classList.remove('hidden');
+                gameModeDiv.classList.add('hidden');
+                
+                // Stop any ongoing recording in game mode
+                if (gameMode.isRecording) {
+                    gameMode.stopRecording();
+                }
+            });
+            
+            gameTab.addEventListener('click', () => {
+                gameTab.classList.add('tab-active');
+                practiceTab.classList.remove('tab-active');
+                gameModeDiv.classList.remove('hidden');
+                practiceModeDiv.classList.add('hidden');
+                
+                // Stop any ongoing recording in practice mode
+                if (practiceMode.isRecording) {
+                    practiceMode.stopRecording();
+                }
+            });
+        });
     </script>
 </body>
 </html>

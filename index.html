@@ -1,651 +1,788 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Singing Training App</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"
+      rel="stylesheet"
+    />
     <style>
-        @media (max-width: 640px) {
-            .note-display {
-                font-size: 32px;
-            }
-            .feedback {
-                font-size: 24px;
-            }
+      @media (max-width: 640px) {
+        .note-display {
+          font-size: 32px;
         }
-        
-        .gradient-button {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            transition: all 0.3s ease;
+        .feedback {
+          font-size: 24px;
         }
-        
-        .gradient-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
-        }
-        
-        .gradient-button:disabled {
-            background: #cccccc;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .pitch-indicator {
-            background: linear-gradient(to right, 
-                #ff6b6b 0%, 
-                #ffd93d 30%, 
-                #6dd5ed 50%, 
-                #ffd93d 70%, 
-                #ff6b6b 100%
-            );
-        }
-        
-        .pitch-marker {
-            transition: left 0.1s ease-out;
-        }
-        
-        .note-card {
-            background: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
-        }
-        
-        .note-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
+      }
 
-        .tab-active {
-            border-bottom: 3px solid #4CAF50;
-            color: #4CAF50;
-        }
+      .gradient-button {
+        background: linear-gradient(135deg, #4caf50, #45a049);
+        transition: all 0.3s ease;
+      }
 
-        .sequence-note {
-            opacity: 0.5;
-            transition: all 0.3s ease;
-        }
+      .gradient-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+      }
 
-        .sequence-note.current {
-            opacity: 1;
-            transform: scale(1.1);
-        }
+      .gradient-button:disabled {
+        background: #cccccc;
+        transform: none;
+        box-shadow: none;
+      }
 
-        .sequence-note.completed {
-            opacity: 1;
-            color: #4CAF50;
-        }
+      .pitch-indicator {
+        background: linear-gradient(
+          to right,
+          #ff6b6b 0%,
+          #ffd93d 30%,
+          #6dd5ed 50%,
+          #ffd93d 70%,
+          #ff6b6b 100%
+        );
+      }
 
-        select {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
-            padding-right: 2.5rem;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-        }
-        
-        canvas {
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
+      .pitch-marker {
+        transition: left 0.1s ease-out;
+      }
+
+      .note-card {
+        background: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease;
+      }
+
+      .note-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+
+      .tab-active {
+        border-bottom: 3px solid #4caf50;
+        color: #4caf50;
+      }
+
+      .sequence-note {
+        opacity: 0.5;
+        transition: all 0.3s ease;
+      }
+
+      .sequence-note.current {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+
+      .sequence-note.completed {
+        opacity: 1;
+        color: #4caf50;
+      }
+
+      select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+      }
+
+      canvas {
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
     </style>
-</head>
-<body class="bg-gray-50 min-h-screen">
+  </head>
+  <body class="bg-gray-50 min-h-screen">
     <div class="max-w-4xl mx-auto px-4 py-8">
-        <h1 class="text-4xl font-bold text-center text-gray-800 mb-8">Singing Training App</h1>
-        
-        <!-- Tab Navigation -->
-        <div class="flex justify-center mb-8">
-            <button id="practiceTab" class="px-6 py-3 font-semibold tab-active">Practice Mode</button>
-            <button id="gameTab" class="px-6 py-3 font-semibold">Game Mode</button>
+      <h1 class="text-4xl font-bold text-center text-gray-800 mb-8">
+        Singing Training App
+      </h1>
+
+      <!-- Tab Navigation -->
+      <div class="flex justify-center mb-8">
+        <button id="practiceTab" class="px-6 py-3 font-semibold tab-active">
+          Practice Mode
+        </button>
+        <button id="gameTab" class="px-6 py-3 font-semibold">Game Mode</button>
+      </div>
+
+      <!-- Practice Mode -->
+      <div id="practiceMode" class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+        <div class="flex flex-wrap gap-4 justify-center mb-6">
+          <button
+            id="startButton"
+            class="gradient-button text-white px-6 py-3 rounded-lg font-semibold"
+          >
+            Start Microphone
+          </button>
+          <button
+            id="stopButton"
+            disabled
+            class="gradient-button text-white px-6 py-3 rounded-lg font-semibold"
+          >
+            Stop
+          </button>
         </div>
 
-        <!-- Practice Mode -->
-        <div id="practiceMode" class="bg-white rounded-lg shadow-lg p-6 md:p-8">
-            <div class="flex flex-wrap gap-4 justify-center mb-6">
-                <button id="startButton" class="gradient-button text-white px-6 py-3 rounded-lg font-semibold">
-                    Start Microphone
-                </button>
-                <button id="stopButton" disabled class="gradient-button text-white px-6 py-3 rounded-lg font-semibold">
-                    Stop
-                </button>
+        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+          <div class="flex flex-wrap gap-4 justify-center items-center">
+            <div class="flex items-center gap-2">
+              <label for="noteSelect" class="text-gray-700 font-medium"
+                >Target Note:</label
+              >
+              <select
+                id="noteSelect"
+                class="block w-40 px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="C">C</option>
+                <option value="C#">C#</option>
+                <option value="D">D</option>
+                <option value="D#">D#</option>
+                <option value="E">E</option>
+                <option value="F">F</option>
+                <option value="F#">F#</option>
+                <option value="G">G</option>
+                <option value="G#">G#</option>
+                <option value="A">A</option>
+                <option value="A#">A#</option>
+                <option value="B">B</option>
+              </select>
             </div>
-            
-            <div class="bg-gray-50 rounded-lg p-6 mb-6">
-                <div class="flex flex-wrap gap-4 justify-center items-center">
-                    <div class="flex items-center gap-2">
-                        <label for="noteSelect" class="text-gray-700 font-medium">Target Note:</label>
-                        <select id="noteSelect" class="block w-40 px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                            <option value="C">C</option>
-                            <option value="C#">C#</option>
-                            <option value="D">D</option>
-                            <option value="D#">D#</option>
-                            <option value="E">E</option>
-                            <option value="F">F</option>
-                            <option value="F#">F#</option>
-                            <option value="G">G</option>
-                            <option value="G#">G#</option>
-                            <option value="A">A</option>
-                            <option value="A#">A#</option>
-                            <option value="B">B</option>
-                        </select>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <label for="octaveSelect" class="text-gray-700 font-medium">Octave:</label>
-                        <select id="octaveSelect" class="block w-32 px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                            <option value="3">Octave 3</option>
-                            <option value="4" selected>Octave 4</option>
-                            <option value="5">Octave 5</option>
-                        </select>
-                    </div>
-                </div>
+            <div class="flex items-center gap-2">
+              <label for="octaveSelect" class="text-gray-700 font-medium"
+                >Octave:</label
+              >
+              <select
+                id="octaveSelect"
+                class="block w-32 px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="3" selected>Octave 3</option>
+                <option value="4">Octave 4</option>
+                <option value="5">Octave 5</option>
+              </select>
             </div>
-            
-            <div class="flex flex-wrap justify-center gap-6 mb-6">
-                <div class="note-card p-4 rounded-lg min-w-[120px] text-center">
-                    <div class="text-sm text-gray-500 mb-1">Target</div>
-                    <div id="targetNote" class="text-2xl font-bold text-gray-800">C4</div>
-                </div>
-                <div class="flex items-center">
-                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                    </svg>
-                </div>
-                <div class="note-card p-4 rounded-lg min-w-[120px] text-center">
-                    <div class="text-sm text-gray-500 mb-1">Current</div>
-                    <div id="noteDisplay" class="text-2xl font-bold text-gray-800">-</div>
-                </div>
-            </div>
-            
-            <div id="centsDisplay" class="text-xl text-center text-gray-600 mb-4">0 cents</div>
-            <div id="feedback" class="text-2xl text-center font-semibold mb-6 min-h-[40px] text-gray-800">
-                Sing a note...
-            </div>
-            
-            <div class="relative h-8 rounded-full overflow-hidden pitch-indicator mb-8">
-                <div id="pitchMarker" class="pitch-marker absolute top-0 w-1 h-full bg-black left-1/2 transform -translate-x-1/2"></div>
-            </div>
-            
-            <canvas id="visualizer" class="w-full h-48 bg-white"></canvas>
+          </div>
         </div>
 
-        <!-- Game Mode -->
-        <div id="gameMode" class="bg-white rounded-lg shadow-lg p-6 md:p-8 hidden">
-            <div class="flex flex-wrap gap-4 justify-center mb-6">
-                <button id="startGameButton" class="gradient-button text-white px-6 py-3 rounded-lg font-semibold">
-                    Start Game
-                </button>
-                <button id="stopGameButton" disabled class="gradient-button text-white px-6 py-3 rounded-lg font-semibold">
-                    Stop
-                </button>
+        <div class="flex flex-wrap justify-center gap-6 mb-6">
+          <div class="note-card p-4 rounded-lg min-w-[120px] text-center">
+            <div class="text-sm text-gray-500 mb-1">Target</div>
+            <div id="targetNote" class="text-2xl font-bold text-gray-800">
+              C3
             </div>
-
-            <div class="flex justify-center gap-4 flex-wrap mb-8">
-                <div class="sequence-note current p-4 rounded-lg bg-gray-50">
-                    <div class="text-lg font-bold">Do (C)</div>
-                </div>
-                <div class="sequence-note p-4 rounded-lg bg-gray-50">
-                    <div class="text-lg font-bold">Re (D)</div>
-                </div>
-                <div class="sequence-note p-4 rounded-lg bg-gray-50">
-                    <div class="text-lg font-bold">Mi (E)</div>
-                </div>
-                <div class="sequence-note p-4 rounded-lg bg-gray-50">
-                    <div class="text-lg font-bold">Fa (F)</div>
-                </div>
-                <div class="sequence-note p-4 rounded-lg bg-gray-50">
-                    <div class="text-lg font-bold">So (G)</div>
-                </div>
-                <div class="sequence-note p-4 rounded-lg bg-gray-50">
-                    <div class="text-lg font-bold">La (A)</div>
-                </div>
-                <div class="sequence-note p-4 rounded-lg bg-gray-50">
-                    <div class="text-lg font-bold">Ti (B)</div>
-                </div>
-                <div class="sequence-note p-4 rounded-lg bg-gray-50">
-                    <div class="text-lg font-bold">Do (C)</div>
-                </div>
+          </div>
+          <div class="flex items-center">
+            <svg
+              class="w-6 h-6 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M14 5l7 7m0 0l-7 7m7-7H3"
+              />
+            </svg>
+          </div>
+          <div class="note-card p-4 rounded-lg min-w-[120px] text-center">
+            <div class="text-sm text-gray-500 mb-1">Current</div>
+            <div id="noteDisplay" class="text-2xl font-bold text-gray-800">
+              -
             </div>
-
-            <div id="gameTargetNote" class="text-3xl font-bold text-center mb-4">Sing: C4</div>
-            <div id="gameFeedback" class="text-2xl text-center font-semibold mb-6 min-h-[40px]">
-                Get ready...
-            </div>
-            
-            <div class="relative h-8 rounded-full overflow-hidden pitch-indicator mb-8">
-                <div id="gamePitchMarker" class="pitch-marker absolute top-0 w-1 h-full bg-black left-1/2 transform -translate-x-1/2"></div>
-            </div>
-            
-            <canvas id="gameVisualizer" class="w-full h-48 bg-white"></canvas>
+          </div>
         </div>
+
+        <div id="centsDisplay" class="text-xl text-center text-gray-600 mb-4">
+          0 cents
+        </div>
+        <div
+          id="feedback"
+          class="text-2xl text-center font-semibold mb-6 min-h-[40px] text-gray-800"
+        >
+          Sing a note...
+        </div>
+
+        <div
+          class="relative h-8 rounded-full overflow-hidden pitch-indicator mb-8"
+        >
+          <div
+            id="pitchMarker"
+            class="pitch-marker absolute top-0 w-1 h-full bg-black left-1/2 transform -translate-x-1/2"
+          ></div>
+        </div>
+
+        <canvas id="visualizer" class="w-full h-48 bg-white"></canvas>
+      </div>
+
+      <!-- Game Mode -->
+      <div
+        id="gameMode"
+        class="bg-white rounded-lg shadow-lg p-6 md:p-8 hidden"
+      >
+        <div class="flex flex-wrap gap-4 justify-center mb-6">
+          <button
+            id="startGameButton"
+            class="gradient-button text-white px-6 py-3 rounded-lg font-semibold"
+          >
+            Start Game
+          </button>
+          <button
+            id="stopGameButton"
+            disabled
+            class="gradient-button text-white px-6 py-3 rounded-lg font-semibold"
+          >
+            Stop
+          </button>
+        </div>
+
+        <div class="flex justify-center gap-4 flex-wrap mb-8">
+          <div class="sequence-note current p-4 rounded-lg bg-gray-50">
+            <div class="text-lg font-bold">Do (C)</div>
+          </div>
+          <div class="sequence-note p-4 rounded-lg bg-gray-50">
+            <div class="text-lg font-bold">Re (D)</div>
+          </div>
+          <div class="sequence-note p-4 rounded-lg bg-gray-50">
+            <div class="text-lg font-bold">Mi (E)</div>
+          </div>
+          <div class="sequence-note p-4 rounded-lg bg-gray-50">
+            <div class="text-lg font-bold">Fa (F)</div>
+          </div>
+          <div class="sequence-note p-4 rounded-lg bg-gray-50">
+            <div class="text-lg font-bold">So (G)</div>
+          </div>
+          <div class="sequence-note p-4 rounded-lg bg-gray-50">
+            <div class="text-lg font-bold">La (A)</div>
+          </div>
+          <div class="sequence-note p-4 rounded-lg bg-gray-50">
+            <div class="text-lg font-bold">Ti (B)</div>
+          </div>
+          <div class="sequence-note p-4 rounded-lg bg-gray-50">
+            <div class="text-lg font-bold">Do (C)</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <label for="octaveSelect" class="text-gray-700 font-medium"
+              >Octave:</label
+            >
+            <select
+              id="octaveSelect"
+              class="block w-32 px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            >
+              <option value="3" selected>Octave 3</option>
+              <option value="4">Octave 4</option>
+              <option value="5">Octave 5</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="gameTargetNote" class="text-3xl font-bold text-center mb-4">
+          Sing: C3
+        </div>
+        <div
+          id="gameCentsDisplay"
+          class="text-xl text-center text-gray-600 mb-4"
+        >
+          0 cents
+        </div>
+        <div
+          id="gameFeedback"
+          class="text-2xl text-center font-semibold mb-6 min-h-[40px]"
+        >
+          Get ready...
+        </div>
+
+        <div
+          class="relative h-8 rounded-full overflow-hidden pitch-indicator mb-8"
+        >
+          <div
+            id="gamePitchMarker"
+            class="pitch-marker absolute top-0 w-1 h-full bg-black left-1/2 transform -translate-x-1/2"
+          ></div>
+        </div>
+
+        <canvas id="gameVisualizer" class="w-full h-48 bg-white"></canvas>
+      </div>
     </div>
-    
+
     <script>
-        class SingingTrainer {
-            constructor() {
-                // Initialize audio context and analyzer
-                this.audioContext = null;
-                this.analyser = null;
-                this.mediaStreamSource = null;
-                this.isRecording = false;
-                this.minPitch = 50;
-                this.maxPitch = 1500;
-                this.notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-                
-                // Get DOM elements
-                this.startButton = document.getElementById('startButton');
-                this.stopButton = document.getElementById('stopButton');
-                this.targetNote = document.getElementById('targetNote');
-                this.noteSelect = document.getElementById('noteSelect');
-                this.octaveSelect = document.getElementById('octaveSelect');
-                this.noteDisplay = document.getElementById('noteDisplay');
-                this.centsDisplay = document.getElementById('centsDisplay');
-                this.feedback = document.getElementById('feedback');
-                this.pitchMarker = document.getElementById('pitchMarker');
-                this.canvas = document.getElementById('visualizer');
-                this.canvasCtx = this.canvas.getContext('2d');
-                
-                // Set up event listeners
-                this.startButton.addEventListener('click', () => this.startRecording());
-                this.stopButton.addEventListener('click', () => this.stopRecording());
-                this.noteSelect.addEventListener('change', () => this.updateTargetNote());
-                this.octaveSelect.addEventListener('change', () => this.updateTargetNote());
-                
-                // Initialize target frequency
-                this.targetFrequency = this.noteToFrequency('C', 4);
-            }
+      class SingingTrainer {
+        constructor() {
+          // Initialize audio context and analyzer
+          this.audioContext = null;
+          this.analyser = null;
+          this.mediaStreamSource = null;
+          this.isRecording = false;
+          this.minPitch = 50;
+          this.maxPitch = 1500;
+          this.notes = [
+            'C',
+            'C#',
+            'D',
+            'D#',
+            'E',
+            'F',
+            'F#',
+            'G',
+            'G#',
+            'A',
+            'A#',
+            'B',
+          ];
 
-            async startRecording() {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ 
-                        audio: {
-                            echoCancellation: false,
-                            noiseSuppression: false,
-                            autoGainControl: false
-                        } 
-                    });
-                    
-                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    this.analyser = this.audioContext.createAnalyser();
-                    this.analyser.fftSize = 2048;
-                    this.analyser.smoothingTimeConstant = 0;
-                    
-                    this.mediaStreamSource = this.audioContext.createMediaStreamSource(stream);
-                    this.mediaStreamSource.connect(this.analyser);
-                    
-                    const bufferLength = this.analyser.frequencyBinCount;
-                    const dataArray = new Float32Array(bufferLength);
-                    
-                    this.isRecording = true;
-                    this.startButton.disabled = true;
-                    this.stopButton.disabled = false;
-                    this.feedback.textContent = 'Listening...';
-                    
-                    this.updatePitch(dataArray);
-                    this.drawVisualizer(dataArray);
-                } catch (error) {
-                    console.error('Error accessing microphone:', error);
-                    this.feedback.textContent = 'Error: Please allow microphone access';
-                }
-            }
+          // Get DOM elements
+          this.startButton = document.getElementById('startButton');
+          this.stopButton = document.getElementById('stopButton');
+          this.targetNote = document.getElementById('targetNote');
+          this.noteSelect = document.getElementById('noteSelect');
+          this.octaveSelect = document.getElementById('octaveSelect');
+          this.noteDisplay = document.getElementById('noteDisplay');
+          this.centsDisplay = document.getElementById('centsDisplay');
+          this.feedback = document.getElementById('feedback');
+          this.pitchMarker = document.getElementById('pitchMarker');
+          this.canvas = document.getElementById('visualizer');
+          this.canvasCtx = this.canvas.getContext('2d');
 
-            stopRecording() {
-                if (this.audioContext && this.mediaStreamSource) {
-                    this.mediaStreamSource.disconnect();
-                    this.audioContext.close();
-                    this.audioContext = null;
-                    this.mediaStreamSource = null;
-                    this.analyser = null;
-                    this.isRecording = false;
-                    
-                    this.startButton.disabled = false;
-                    this.stopButton.disabled = true;
-                    
-                    this.pitchMarker.style.left = '50%';
-                    
-                    if (this.noteDisplay) {
-                        this.noteDisplay.textContent = '-';
-                    }
-                    
-                    this.feedback.textContent = 'Sing a note...';
-                    this.feedback.style.color = '#4b5563';
-                    
-                    if (this.centsDisplay) {
-                        this.centsDisplay.textContent = '0 cents';
-                    }
-                    
-                    // Clear canvas
-                    this.canvasCtx.fillStyle = '#f8fafc';
-                    this.canvasCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-                    
-                    // Clear any existing animation frames
-                    if (this.animationFrame) {
-                        cancelAnimationFrame(this.animationFrame);
-                        this.animationFrame = null;
-                    }
-                }
-            }
+          // Set up event listeners
+          this.startButton.addEventListener('click', () =>
+            this.startRecording()
+          );
+          this.stopButton.addEventListener('click', () => this.stopRecording());
+          this.noteSelect.addEventListener('change', () =>
+            this.updateTargetNote()
+          );
+          this.octaveSelect.addEventListener('change', () =>
+            this.updateTargetNote()
+          );
 
-            updatePitch(dataArray) {
-                if (!this.isRecording) return;
-
-                this.analyser.getFloatTimeDomainData(dataArray);
-                const pitch = this.autoCorrelate(dataArray, this.audioContext.sampleRate);
-
-                if (pitch) {
-                    const note = this.frequencyToNote(pitch);
-                    const cents = this.calculateCents(pitch);
-                    
-                    this.noteDisplay.textContent = note;
-                    this.updatePitchIndicator(cents);
-                    
-                    const accuracy = Math.abs(cents);
-                    if (accuracy < 10) {
-                        this.feedback.textContent = 'Perfect!';
-                        this.feedback.style.color = '#4CAF50';
-                    } else if (accuracy < 30) {
-                        this.feedback.textContent = cents > 0 ? 'Slightly high' : 'Slightly low';
-                        this.feedback.style.color = '#8BC34A';
-                    } else if (accuracy < 50) {
-                        this.feedback.textContent = cents > 0 ? 'Too high' : 'Too low';
-                        this.feedback.style.color = '#FFC107';
-                    } else {
-                        this.feedback.textContent = cents > 0 ? 'Way too high' : 'Way too low';
-                        this.feedback.style.color = '#F44336';
-                    }
-                    
-                    this.centsDisplay.textContent = `${cents > 0 ? '+' : ''}${Math.round(cents)} cents`;
-                } else {
-                    this.noteDisplay.textContent = '-';
-                    this.feedback.textContent = 'Sing a note...';
-                    this.feedback.style.color = '#4b5563';
-                    this.centsDisplay.textContent = '0 cents';
-                }
-
-                requestAnimationFrame(() => this.updatePitch(dataArray));
-            }
-
-            drawVisualizer(dataArray) {
-                if (!this.isRecording) return;
-
-                this.analyser.getFloatTimeDomainData(dataArray);
-                
-                this.canvasCtx.fillStyle = '#f8fafc';
-                this.canvasCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-                this.canvasCtx.lineWidth = 2;
-                this.canvasCtx.strokeStyle = '#4CAF50';
-                this.canvasCtx.beginPath();
-
-                const sliceWidth = this.canvas.width / dataArray.length;
-                let x = 0;
-
-                for (let i = 0; i < dataArray.length; i++) {
-                    const v = dataArray[i] * 100;
-                    const y = (this.canvas.height / 2) + (v * this.canvas.height / 2);
-
-                    if (i === 0) {
-                        this.canvasCtx.moveTo(x, y);
-                    } else {
-                        this.canvasCtx.lineTo(x, y);
-                    }
-
-                    x += sliceWidth;
-                }
-
-                this.canvasCtx.lineTo(this.canvas.width, this.canvas.height / 2);
-                this.canvasCtx.stroke();
-
-                requestAnimationFrame(() => this.drawVisualizer(dataArray));
-            }
-
-            frequencyToNote(frequency) {
-                const a4 = 440;
-                const a4Index = this.notes.indexOf('A');
-                
-                const halfSteps = Math.round(12 * Math.log2(frequency / a4));
-                const octave = Math.floor((halfSteps + a4Index) / 12) + 4;
-                const noteIndex = ((halfSteps + a4Index) % 12 + 12) % 12;
-                
-                return `${this.notes[noteIndex]}${octave}`;
-            }
-
-            updateTargetNote() {
-                const note = this.noteSelect.value;
-                const octave = parseInt(this.octaveSelect.value);
-                this.targetFrequency = this.noteToFrequency(note, octave);
-                this.targetNote.textContent = `${note}${octave}`;
-            }
-
-            noteToFrequency(note, octave) {
-                const a4 = 440;
-                const a4Index = this.notes.indexOf('A');
-                const noteIndex = this.notes.indexOf(note);
-                const octaveDiff = octave - 4;
-                
-                const halfSteps = noteIndex - a4Index + (octaveDiff * 12);
-                return a4 * Math.pow(2, halfSteps / 12);
-            }
-
-            calculateCents(frequency) {
-                const ratio = frequency / this.targetFrequency;
-                return 1200 * Math.log2(ratio);
-            }
-
-            updatePitchIndicator(cents) {
-                const position = 50 + (cents / 2);
-                this.pitchMarker.style.left = `${Math.max(0, Math.min(100, position))}%`;
-            }
-
-            autoCorrelate(buffer, sampleRate) {
-                const SIZE = buffer.length;
-                const MAX_SAMPLES = Math.floor(SIZE/2);
-                let bestOffset = -1;
-                let bestCorrelation = 0;
-                let rms = 0;
-                
-                for (let i = 0; i < SIZE; i++) {
-                    rms += buffer[i] * buffer[i];
-                }
-                rms = Math.sqrt(rms / SIZE);
-
-                if (rms < 0.003) {
-                    return null;
-                }
-
-                let correlation = new Float32Array(MAX_SAMPLES);
-                for (let offset = 1; offset < MAX_SAMPLES; offset++) {
-                    let sum = 0;
-                    for (let i = 0; i < MAX_SAMPLES; i++) {
-                        sum += Math.abs(buffer[i] - buffer[i + offset]);
-                    }
-                    correlation[offset] = 1 - (sum / MAX_SAMPLES);
-                }
-
-                let MIN_OFFSET = Math.floor(sampleRate / this.maxPitch);
-                let MAX_OFFSET = Math.floor(sampleRate / this.minPitch);
-
-                for (let offset = MIN_OFFSET; offset <= MAX_OFFSET; offset++) {
-                    if (correlation[offset] > bestCorrelation) {
-                        bestCorrelation = correlation[offset];
-                        bestOffset = offset;
-                    }
-                }
-
-                if (bestCorrelation > 0.5) {
-                    const fundamentalFreq = sampleRate / bestOffset;
-                    return fundamentalFreq;
-                }
-                
-                return null;
-            }
+          // Initialize target frequency
+          this.targetFrequency = this.noteToFrequency('C', 3);
         }
 
-        class SingingGame extends SingingTrainer {
-            constructor() {
-                super();
-                this.sequence = [
-                    { note: 'C', name: 'Do' },
-                    { note: 'D', name: 'Re' },
-                    { note: 'E', name: 'Mi' },
-                    { note: 'F', name: 'Fa' },
-                    { note: 'G', name: 'So' },
-                    { note: 'A', name: 'La' },
-                    { note: 'B', name: 'Ti' },
-                    { note: 'C', name: 'Do' }
-                ];
-                this.currentNoteIndex = 0;
-                this.noteHoldTimer = null;
-                this.requiredHoldTime = 500;
-                
-                // Override DOM elements for game mode
-                this.startButton = document.getElementById('startGameButton');
-                this.stopButton = document.getElementById('stopGameButton');
-                this.feedback = document.getElementById('gameFeedback');
-                this.pitchMarker = document.getElementById('gamePitchMarker');
-                this.canvas = document.getElementById('gameVisualizer');
-                this.canvasCtx = this.canvas.getContext('2d');
-                
-                this.gameTargetNote = document.getElementById('gameTargetNote');
-                this.sequenceNotes = document.querySelectorAll('.sequence-note');
-                this.gameOctaveSelect = document.getElementById('gameOctaveSelect');
-                
-                // Sync octave selection between modes
-                this.gameOctaveSelect.addEventListener('change', () => {
-                    document.getElementById('octaveSelect').value = this.gameOctaveSelect.value;
-                    this.setCurrentNote();
-                });
+        async startRecording() {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              audio: {
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false,
+              },
+            });
 
-                document.getElementById('octaveSelect').addEventListener('change', () => {
-                    this.gameOctaveSelect.value = document.getElementById('octaveSelect').value;
-                    this.setCurrentNote();
-                });
-                
-                this.setCurrentNote();
-            }
+            this.audioContext = new (window.AudioContext ||
+              window.webkitAudioContext)();
+            this.analyser = this.audioContext.createAnalyser();
+            this.analyser.fftSize = 2048;
+            this.analyser.smoothingTimeConstant = 0;
 
-            setCurrentNote() {
-                const current = this.sequence[this.currentNoteIndex];
-                const octave = parseInt(this.gameOctaveSelect.value);
-                
-                // For the last note, use one octave higher
-                const noteOctave = current.note === 'C' && this.currentNoteIndex === this.sequence.length - 1 
-                    ? octave + 1 
-                    : octave;
-                
-                this.targetFrequency = this.noteToFrequency(current.note, noteOctave);
-                this.gameTargetNote.textContent = `Sing: ${current.name} (${current.note}${noteOctave})`;
-                
-                this.sequenceNotes.forEach((el, index) => {
-                    el.classList.remove('current', 'completed');
-                    if (index < this.currentNoteIndex) {
-                        el.classList.add('completed');
-                    } else if (index === this.currentNoteIndex) {
-                        el.classList.add('current');
-                    }
-                })
-            }
+            this.mediaStreamSource =
+              this.audioContext.createMediaStreamSource(stream);
+            this.mediaStreamSource.connect(this.analyser);
 
-            updatePitch(dataArray) {
-                if (!this.isRecording) return;
+            const bufferLength = this.analyser.frequencyBinCount;
+            const dataArray = new Float32Array(bufferLength);
 
-                this.analyser.getFloatTimeDomainData(dataArray);
-                const pitch = this.autoCorrelate(dataArray, this.audioContext.sampleRate);
+            this.isRecording = true;
+            this.startButton.disabled = true;
+            this.stopButton.disabled = false;
+            this.feedback.textContent = 'Listening...';
 
-                if (pitch) {
-                    const note = this.frequencyToNote(pitch);
-                    const cents = this.calculateCents(pitch);
-                    this.updatePitchIndicator(cents);
-                    
-                    const accuracy = Math.abs(cents);
-                    
-                    if (accuracy < 20) {
-                        if (!this.noteHoldTimer) {
-                            this.noteHoldTimer = setTimeout(() => {
-                                this.advanceNote();
-                            }, this.requiredHoldTime);
-                        }
-                        this.feedback.textContent = 'Hold it...';
-                        this.feedback.style.color = '#4CAF50';
-                    } else {
-                        if (this.noteHoldTimer) {
-                            clearTimeout(this.noteHoldTimer);
-                            this.noteHoldTimer = null;
-                        }
-                        if (accuracy < 30) {
-                            this.feedback.textContent = cents > 0 ? 'Slightly high' : 'Slightly low';
-                            this.feedback.style.color = '#8BC34A';
-                        } else if (accuracy < 50) {
-                            this.feedback.textContent = cents > 0 ? 'Too high' : 'Too low';
-                            this.feedback.style.color = '#FFC107';
-                        } else {
-                            this.feedback.textContent = cents > 0 ? 'Way too high' : 'Way too low';
-                            this.feedback.style.color = '#F44336';
-                        }
-                    }
-                } else {
-                    if (this.noteHoldTimer) {
-                        clearTimeout(this.noteHoldTimer);
-                        this.noteHoldTimer = null;
-                    }
-                    this.feedback.textContent = 'Sing the note...';
-                    this.feedback.style.color = '#4b5563';
-                }
-
-                requestAnimationFrame(() => this.updatePitch(dataArray));
-            }
-
-            advanceNote() {
-                this.currentNoteIndex++;
-                this.noteHoldTimer = null;
-                
-                if (this.currentNoteIndex >= this.sequence.length) {
-                    this.feedback.textContent = 'Congratulations! You completed the sequence!';
-                    this.feedback.style.color = '#4CAF50';
-                    this.stopRecording();
-                    return;
-                }
-                
-                this.setCurrentNote();
-            }
+            this.updatePitch(dataArray);
+            this.drawVisualizer(dataArray);
+          } catch (error) {
+            console.error('Error accessing microphone:', error);
+            this.feedback.textContent = 'Error: Please allow microphone access';
+          }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            let practiceMode = new SingingTrainer();
-            let gameMode = new SingingGame();
-            
-            // Tab switching logic
-            const practiceTab = document.getElementById('practiceTab');
-            const gameTab = document.getElementById('gameTab');
-            const practiceModeDiv = document.getElementById('practiceMode');
-            const gameModeDiv = document.getElementById('gameMode');
-            
-            practiceTab.addEventListener('click', () => {
-                practiceTab.classList.add('tab-active');
-                gameTab.classList.remove('tab-active');
-                practiceModeDiv.classList.remove('hidden');
-                gameModeDiv.classList.add('hidden');
-                
-                // Stop any ongoing recording in game mode
-                if (gameMode.isRecording) {
-                    gameMode.stopRecording();
-                }
-            });
-            
-            gameTab.addEventListener('click', () => {
-                gameTab.classList.add('tab-active');
-                practiceTab.classList.remove('tab-active');
-                gameModeDiv.classList.remove('hidden');
-                practiceModeDiv.classList.add('hidden');
-                
-                // Stop any ongoing recording in practice mode
-                if (practiceMode.isRecording) {
-                    practiceMode.stopRecording();
-                }
-            });
+        stopRecording() {
+          if (this.audioContext && this.mediaStreamSource) {
+            this.mediaStreamSource.disconnect();
+            this.audioContext.close();
+            this.audioContext = null;
+            this.mediaStreamSource = null;
+            this.analyser = null;
+            this.isRecording = false;
+
+            this.startButton.disabled = false;
+            this.stopButton.disabled = true;
+
+            this.pitchMarker.style.left = '50%';
+
+            if (this.noteDisplay) {
+              this.noteDisplay.textContent = '-';
+            }
+
+            this.feedback.textContent = 'Sing a note...';
+            this.feedback.style.color = '#4b5563';
+
+            if (this.centsDisplay) {
+              this.centsDisplay.textContent = '0 cents';
+            }
+
+            // Clear canvas
+            this.canvasCtx.fillStyle = '#f8fafc';
+            this.canvasCtx.fillRect(
+              0,
+              0,
+              this.canvas.width,
+              this.canvas.height
+            );
+
+            // Clear any existing animation frames
+            if (this.animationFrame) {
+              cancelAnimationFrame(this.animationFrame);
+              this.animationFrame = null;
+            }
+          }
+        }
+
+        updatePitch(dataArray) {
+          if (!this.isRecording) return;
+
+          this.analyser.getFloatTimeDomainData(dataArray);
+          const pitch = this.autoCorrelate(
+            dataArray,
+            this.audioContext.sampleRate
+          );
+
+          if (pitch) {
+            const note = this.frequencyToNote(pitch);
+            const cents = this.calculateCents(pitch);
+
+            this.noteDisplay.textContent = note;
+            this.updatePitchIndicator(cents);
+
+            const accuracy = Math.abs(cents);
+            if (accuracy < 10) {
+              this.feedback.textContent = 'Perfect!';
+              this.feedback.style.color = '#4CAF50';
+            } else if (accuracy < 30) {
+              this.feedback.textContent =
+                cents > 0 ? 'Slightly high' : 'Slightly low';
+              this.feedback.style.color = '#8BC34A';
+            } else if (accuracy < 50) {
+              this.feedback.textContent = cents > 0 ? 'Too high' : 'Too low';
+              this.feedback.style.color = '#FFC107';
+            } else {
+              this.feedback.textContent =
+                cents > 0 ? 'Way too high' : 'Way too low';
+              this.feedback.style.color = '#F44336';
+            }
+
+            this.centsDisplay.textContent = `${
+              cents > 0 ? '+' : ''
+            }${Math.round(cents)} cents`;
+          } else {
+            this.noteDisplay.textContent = '-';
+            this.feedback.textContent = 'Sing a note...';
+            this.feedback.style.color = '#4b5563';
+            this.centsDisplay.textContent = '0 cents';
+          }
+
+          requestAnimationFrame(() => this.updatePitch(dataArray));
+        }
+
+        drawVisualizer(dataArray) {
+          if (!this.isRecording) return;
+
+          this.analyser.getFloatTimeDomainData(dataArray);
+
+          this.canvasCtx.fillStyle = '#f8fafc';
+          this.canvasCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+          this.canvasCtx.lineWidth = 2;
+          this.canvasCtx.strokeStyle = '#4CAF50';
+          this.canvasCtx.beginPath();
+
+          const sliceWidth = this.canvas.width / dataArray.length;
+          let x = 0;
+
+          for (let i = 0; i < dataArray.length; i++) {
+            const v = dataArray[i] * 100;
+            const y = this.canvas.height / 2 + (v * this.canvas.height) / 2;
+
+            if (i === 0) {
+              this.canvasCtx.moveTo(x, y);
+            } else {
+              this.canvasCtx.lineTo(x, y);
+            }
+
+            x += sliceWidth;
+          }
+
+          this.canvasCtx.lineTo(this.canvas.width, this.canvas.height / 2);
+          this.canvasCtx.stroke();
+
+          requestAnimationFrame(() => this.drawVisualizer(dataArray));
+        }
+
+        frequencyToNote(frequency) {
+          const a4 = 440;
+          const a4Index = this.notes.indexOf('A');
+
+          const halfSteps = Math.round(12 * Math.log2(frequency / a4));
+          const octave = Math.floor((halfSteps + a4Index) / 12) + 4;
+          const noteIndex = (((halfSteps + a4Index) % 12) + 12) % 12;
+
+          return `${this.notes[noteIndex]}${octave}`;
+        }
+
+        updateTargetNote() {
+          const note = this.noteSelect.value;
+          const octave = parseInt(this.octaveSelect.value);
+          this.targetFrequency = this.noteToFrequency(note, octave);
+          this.targetNote.textContent = `${note}${octave}`;
+        }
+
+        noteToFrequency(note, octave) {
+          const a4 = 440;
+          const a4Index = this.notes.indexOf('A');
+          const noteIndex = this.notes.indexOf(note);
+          const octaveDiff = octave - 4;
+
+          const halfSteps = noteIndex - a4Index + octaveDiff * 12;
+          return a4 * Math.pow(2, halfSteps / 12);
+        }
+
+        calculateCents(frequency) {
+          const ratio = frequency / this.targetFrequency;
+          return 1200 * Math.log2(ratio);
+        }
+
+        updatePitchIndicator(cents) {
+          const position = 50 + cents / 2;
+          this.pitchMarker.style.left = `${Math.max(
+            0,
+            Math.min(100, position)
+          )}%`;
+        }
+
+        autoCorrelate(buffer, sampleRate) {
+          const SIZE = buffer.length;
+          const MAX_SAMPLES = Math.floor(SIZE / 2);
+          let bestOffset = -1;
+          let bestCorrelation = 0;
+          let rms = 0;
+
+          for (let i = 0; i < SIZE; i++) {
+            rms += buffer[i] * buffer[i];
+          }
+          rms = Math.sqrt(rms / SIZE);
+
+          if (rms < 0.003) {
+            return null;
+          }
+
+          let correlation = new Float32Array(MAX_SAMPLES);
+          for (let offset = 1; offset < MAX_SAMPLES; offset++) {
+            let sum = 0;
+            for (let i = 0; i < MAX_SAMPLES; i++) {
+              sum += Math.abs(buffer[i] - buffer[i + offset]);
+            }
+            correlation[offset] = 1 - sum / MAX_SAMPLES;
+          }
+
+          let MIN_OFFSET = Math.floor(sampleRate / this.maxPitch);
+          let MAX_OFFSET = Math.floor(sampleRate / this.minPitch);
+
+          for (let offset = MIN_OFFSET; offset <= MAX_OFFSET; offset++) {
+            if (correlation[offset] > bestCorrelation) {
+              bestCorrelation = correlation[offset];
+              bestOffset = offset;
+            }
+          }
+
+          if (bestCorrelation > 0.5) {
+            const fundamentalFreq = sampleRate / bestOffset;
+            return fundamentalFreq;
+          }
+
+          return null;
+        }
+      }
+
+      class SingingGame extends SingingTrainer {
+        constructor() {
+          super();
+          this.sequence = [
+            { note: 'C', name: 'Do' },
+            { note: 'D', name: 'Re' },
+            { note: 'E', name: 'Mi' },
+            { note: 'F', name: 'Fa' },
+            { note: 'G', name: 'So' },
+            { note: 'A', name: 'La' },
+            { note: 'B', name: 'Ti' },
+            { note: 'C', name: 'Do' },
+          ];
+          this.currentNoteIndex = 0;
+          this.countsHeld = 0;
+          this.noteHoldTimer = null;
+          this.requiredHoldTime = 500;
+
+          // Override DOM elements for game mode
+          this.startButton = document.getElementById('startGameButton');
+          this.stopButton = document.getElementById('stopGameButton');
+          this.feedback = document.getElementById('gameFeedback');
+          this.pitchMarker = document.getElementById('gamePitchMarker');
+          this.canvas = document.getElementById('gameVisualizer');
+          this.canvasCtx = this.canvas.getContext('2d');
+
+          this.gameTargetNote = document.getElementById('gameTargetNote');
+          this.sequenceNotes = document.querySelectorAll('.sequence-note');
+          this.gameOctaveSelect = document.getElementById('gameOctaveSelect');
+          this.gameCentsDisplay = document.getElementById('gameCentsDisplay');
+
+          this.startButton.addEventListener('click', () => {
+            console.log('start game');
+            this.startRecording();
+          });
+        }
+
+        setCurrentNote() {
+          const current = this.sequence[this.currentNoteIndex];
+          const octave = 3;
+
+          // For the last note, use one octave higher
+          const noteOctave =
+            current.note === 'C' &&
+            this.currentNoteIndex === this.sequence.length - 1
+              ? octave + 1
+              : octave;
+
+          this.targetFrequency = this.noteToFrequency(current.note, noteOctave);
+          this.gameTargetNote.textContent = `Sing: ${current.name} (${current.note}${noteOctave})`;
+
+          this.sequenceNotes.forEach((el, index) => {
+            el.classList.remove('current', 'completed');
+            if (index < this.currentNoteIndex) {
+              el.classList.add('completed');
+            } else if (index === this.currentNoteIndex) {
+              el.classList.add('current');
+            }
+          });
+        }
+
+        updatePitch(dataArray) {
+          if (!this.isRecording) return;
+
+          this.analyser.getFloatTimeDomainData(dataArray);
+          const pitch = this.autoCorrelate(
+            dataArray,
+            this.audioContext.sampleRate
+          );
+
+          if (pitch) {
+            const note = this.frequencyToNote(pitch);
+            const cents = this.calculateCents(pitch);
+            this.updatePitchIndicator(cents);
+
+            const accuracy = Math.abs(cents);
+
+            if (accuracy < 20) {
+              // if (!this.noteHoldTimer) {
+              //     this.noteHoldTimer = setTimeout(() => {
+              //         this.advanceNote();
+              //     }, this.requiredHoldTime);
+              console.log('hit note');
+              this.feedback.textContent = 'Hold it...';
+              this.feedback.style.color = '#4CAF50';
+              this.countsHeld += 2;
+              if (this.countsHeld > 100) {
+                this.feedback.textContent = 'Nice!';
+                this.countsHeld = 0;
+                this.advanceNote();
+              }
+            } else {
+              if (this.noteHoldTimer) {
+                clearTimeout(this.noteHoldTimer);
+                this.noteHoldTimer = null;
+              }
+              if (accuracy < 30) {
+                this.feedback.textContent =
+                  cents > 0 ? 'Slightly high' : 'Slightly low';
+                this.feedback.style.color = '#8BC34A';
+              } else if (accuracy < 50) {
+                this.countsHeld--;
+                this.feedback.textContent = cents > 0 ? 'Too high' : 'Too low';
+                this.feedback.style.color = '#FFC107';
+              } else {
+                this.countsHeld--;
+                this.feedback.textContent =
+                  cents > 0 ? 'Way too high' : 'Way too low';
+                this.feedback.style.color = '#F44336';
+              }
+            }
+            this.gameCentsDisplay.textContent = `${
+              cents > 0 ? '+' : ''
+            }${Math.round(cents)} cents, ${this.countsHeld}`;
+          } else {
+            if (this.noteHoldTimer) {
+              clearTimeout(this.noteHoldTimer);
+              this.noteHoldTimer = null;
+            }
+            this.feedback.textContent = 'Sing the note...';
+            this.feedback.style.color = '#4b5563';
+          }
+          requestAnimationFrame(() => this.updatePitch(dataArray));
+        }
+
+        advanceNote() {
+          this.currentNoteIndex++;
+          this.noteHoldTimer = null;
+
+          if (this.currentNoteIndex >= this.sequence.length) {
+            this.feedback.textContent =
+              'Congratulations! You completed the sequence!';
+            this.feedback.style.color = '#4CAF50';
+            this.stopRecording();
+            return;
+          }
+
+          this.setCurrentNote();
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        let practiceMode = new SingingTrainer();
+        console.log('entered');
+
+        // Tab switching logic
+        const practiceTab = document.getElementById('practiceTab');
+        const gameTab = document.getElementById('gameTab');
+        const practiceModeDiv = document.getElementById('practiceMode');
+        const gameModeDiv = document.getElementById('gameMode');
+
+        practiceTab.addEventListener('click', () => {
+          practiceTab.classList.add('tab-active');
+          gameTab.classList.remove('tab-active');
+          practiceModeDiv.classList.remove('hidden');
+          gameModeDiv.classList.add('hidden');
+
+          // Stop any ongoing recording in game mode
+          if (gameMode.isRecording) {
+            gameMode.stopRecording();
+          }
         });
+
+        gameTab.addEventListener('click', () => {
+          let gameMode = new SingingGame();
+          console.log('gameTab entered');
+          gameTab.classList.add('tab-active');
+          practiceTab.classList.remove('tab-active');
+          gameModeDiv.classList.remove('hidden');
+          practiceModeDiv.classList.add('hidden');
+
+          // Stop any ongoing recording in practice mode
+        });
+      });
     </script>
-</body>
+  </body>
 </html>
